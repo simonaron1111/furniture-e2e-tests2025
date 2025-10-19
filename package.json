@@ -1,0 +1,19 @@
+{
+  "name": "furniture-e2e-tests",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Selenium-based end-to-end tests for diyfurniture Draw2d",
+  "scripts": {
+    "start:app": "cd .. && npm run start",
+    "test:mocha": "mocha \"tests/**/*.spec.js\" --timeout 90000",
+    "test": "node run-e2e.js"
+  },
+  "devDependencies": {
+    "chai": "^4.5.0",
+    "mocha": "^10.7.3",
+    "selenium-webdriver": "^4.26.0",
+    "start-server-and-test": "^2.0.8",
+    "wait-on": "^7.0.1",
+    "tree-kill": "^1.2.2"
+  }
+}
