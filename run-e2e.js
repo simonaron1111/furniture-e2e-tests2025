@@ -1,5 +1,6 @@
 /**
- * Custom E2E runner for Windows-friendly process management.
+ * Custom E2E runner for containerized environment.
+ * - Waits for test backend to be ready
  * - Starts the Angular dev server from repo root
  * - Waits for http://localhost:4200 to be ready
  * - Runs mocha Selenium tests
@@ -11,8 +12,11 @@ const waitOn = require('wait-on');
 const treeKill = require('tree-kill');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
-const E2E_DIR = path.resolve(__dirname, '.');;
+const E2E_DIR = path.resolve(__dirname, '.');
 const SERVER_URL = 'http://localhost:4200/';
+const BACKEND_HOST = process.env.BACKEND_HOST || 'furniture_backend_e2e';
+const BACKEND_PORT = process.env.BACKEND_PORT || '8080';
+const BACKEND_URL = `tcp:${BACKEND_HOST}:${BACKEND_PORT}`;
 
 function spawnShell(command, cwd) {
   // Use shell to improve Windows compatibility (avoids spawn EINVAL issues)
@@ -24,8 +28,21 @@ function spawnShell(command, cwd) {
 }
 
 async function main() {
-  console.log('Starting Angular dev server...');
-  const serverProc = spawnShell('npm run start', ROOT_DIR);
+  // Wait for test backend to be ready (using TCP check)
+  try {
+    console.log(`Waiting for test backend at ${BACKEND_HOST}:${BACKEND_PORT} to be ready...`);
+    await waitOn({
+      resources: [BACKEND_URL],
+      timeout: 120000
+    });
+    console.log('Test backend is up.');
+  } catch (err) {
+    console.error('Test backend did not come up in time:', err);
+    process.exit(1);
+  }
+
+  console.log('Starting Angular dev server with test backend proxy...');
+  const serverProc = spawnShell('npm run start -- --host 0.0.0.0 --port 4200 --proxy-config proxy.conf.test.json', ROOT_DIR);
 
   let serverExited = false;
   serverProc.on('exit', (code, signal) => {

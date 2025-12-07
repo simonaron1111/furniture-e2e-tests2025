@@ -14,7 +14,12 @@ describe('Draw2d E2E', function () {
   before(async () => {
     const options = new chrome.Options()
       // Prefer new headless for modern Chrome; also set window size for canvas
-      .addArguments('--headless=new', '--window-size=1280,900', '--disable-gpu', '--no-sandbox');
+      .addArguments('--headless=new', '--window-size=1280,900', '--disable-gpu', '--no-sandbox', '--disable-dev-shm-usage');
+
+    // Use Chromium binary if CHROME_BIN is set (for Docker)
+    if (process.env.CHROME_BIN) {
+      options.setChromeBinaryPath(process.env.CHROME_BIN);
+    }
 
     driver = await new Builder()
       .forBrowser('chrome')
