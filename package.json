@@ -6,14 +6,22 @@
   "scripts": {
     "start:app": "cd .. && npm run start",
     "test:mocha": "mocha \"tests/**/*.spec.js\" --timeout 90000",
-    "test": "node run-e2e.js"
+    "test": "node run-e2e.js",
+    "test:bdt": "node run-bdt.js",
+    "test:cucumber": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js -p e2e"
   },
   "devDependencies": {
+    "@cucumber/cucumber": "^12.2.0",
+    "@types/node": "^12.11.1",
+    "@types/selenium-webdriver": "^4.35.4",
     "chai": "^4.5.0",
     "mocha": "^10.7.3",
     "selenium-webdriver": "^4.26.0",
     "start-server-and-test": "^2.0.8",
-    "wait-on": "^7.0.1",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "~5.8.3",
+    "wait-on": "^7.0.1"
   }
 }

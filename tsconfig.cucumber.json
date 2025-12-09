@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "ES2019",
+    "outDir": "./out-tsc/cucumber",
+    "types": ["node"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "strict": false
+  },
+  "include": [
+    "features/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "out-tsc"
+  ]
+}
+
