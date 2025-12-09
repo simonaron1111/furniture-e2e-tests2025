@@ -80,6 +80,13 @@ async function main() {
     process.exit(1);
   }
 
+  // Ensure reports directory exists
+  const fs = require('fs');
+  const reportsDir = path.join(E2E_DIR, 'reports', 'mocha');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
+
   // Run mocha tests
   console.log('Running mocha tests...');
   const testProc = spawnShell('npm run test:mocha', E2E_DIR);

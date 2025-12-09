@@ -5,7 +5,7 @@
   "description": "Selenium-based end-to-end tests for diyfurniture Draw2d",
   "scripts": {
     "start:app": "cd .. && npm run start",
-    "test:mocha": "mocha \"tests/**/*.spec.js\" --timeout 90000",
+    "test:mocha": "mocha \"tests/**/*.spec.js\" --timeout 90000 --reporter json --reporter-options output=./reports/mocha/mocha.json",
     "test": "node run-e2e.js",
     "test:bdt": "node run-bdt.js",
     "test:cucumber": "set TS_NODE_PROJECT=tsconfig.cucumber.json&& cucumber-js -p e2e"

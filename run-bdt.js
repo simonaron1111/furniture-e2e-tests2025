@@ -80,6 +80,13 @@ async function main() {
     process.exit(1);
   }
 
+  // Ensure reports directory exists
+  const fs = require('fs');
+  const reportsDir = path.join(E2E_DIR, 'reports', 'cucumber');
+  if (!fs.existsSync(reportsDir)) {
+    fs.mkdirSync(reportsDir, { recursive: true });
+  }
+
   // Run Cucumber BDT tests
   console.log('Running Cucumber BDT tests...');
   const testProc = spawnShell('npm run test:cucumber', E2E_DIR);

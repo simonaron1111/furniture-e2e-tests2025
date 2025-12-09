@@ -8,7 +8,11 @@ module.exports = {
         'features/step-definitions/**/*.ts'
       ],
       publishQuiet: true,
-      format: ['progress'],
+      format: [
+        'progress',
+        'html:./reports/cucumber/index.html',
+        'json:./reports/cucumber/cucumber.json'
+      ],
       paths: ['features/**/*.feature']
     },
     e2e: {
@@ -21,7 +25,11 @@ module.exports = {
         'support/driver.ts'
       ],
       publishQuiet: true,
-      format: ['progress'],
+      format: [
+        'progress',
+        'html:./reports/cucumber/index.html',
+        'json:./reports/cucumber/cucumber.json'
+      ],
       paths: ['features/**/*.feature'],
       tags: '@e2e'
     }
