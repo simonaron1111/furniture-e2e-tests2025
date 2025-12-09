@@ -17,7 +17,8 @@ module.exports = {
         'tsconfig-paths/register'
       ],
       require: [
-        'features/step-definitions/**/*.ts'
+        'features/step-definitions/**/*.ts',
+        'support/driver.ts'
       ],
       publishQuiet: true,
       format: ['progress'],

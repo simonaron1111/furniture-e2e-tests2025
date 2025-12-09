@@ -1,7 +1,9 @@
-import { BeforeAll, AfterAll, Given, When, Then, setDefaultTimeout } from '@cucumber/cucumber';
+import { BeforeAll, AfterAll, Given, When, Then, setDefaultTimeout, Status, After } from '@cucumber/cucumber';
 import assert from 'assert';
 import { Builder, By, until, WebDriver, Capabilities } from 'selenium-webdriver';
 import * as chrome from 'selenium-webdriver/chrome.js';
+import * as path from 'path';
+import * as fs from 'fs';
 
 setDefaultTimeout(30_000);
 
@@ -27,7 +29,6 @@ const BOM_URL = 'http://localhost:4200/bill';
 Given('I am on the Bill of Materials page', async function () {
   assert(driver);
   await driver.get(BOM_URL);
-  await driver.wait(until.elementLocated(By.css('table[mat-table]')), 20_000);
 });
 
 Then('the BOM table should be visible', async function () {
@@ -254,8 +255,10 @@ Then('the submit button should be enabled \\(form valid\\)', async function () {
 Given('the BOM table has a certain number of rows', async function () {
   assert(driver);
   await driver.wait(until.elementLocated(By.css('table[mat-table]')), 20_000);
+  await driver.wait(until.elementLocated(By.css('tr[mat-row]')), 10_000);
   const rows = await driver.findElements(By.css('tr[mat-row]'));
   initialRowCount = rows.length;
+  assert.ok(initialRowCount > 0, 'BOM table should have at least one row');
 });
 
 When('I enter {string} as the name', async function (name: string) {
@@ -388,3 +391,23 @@ Then('each row should have valid data in these columns', async function () {
   assert.ok(/^\d+$/.test(positionText.trim()), 'Position should be a number');
 });
 
+After(async function (scenario) {
+  if (scenario.result?.status === Status.FAILED) {
+      const screenShot = await driver.takeScreenshot();
+      this.attach(screenShot, "image/png");
+      
+      const screenshotsDir = path.join(process.cwd(), 'screenshots');
+      if (!fs.existsSync(screenshotsDir)) {
+          fs.mkdirSync(screenshotsDir, { recursive: true });
+      }
+      
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const scenarioName = scenario.pickle?.name?.replace(/[^a-z0-9]/gi, '_') || 'unknown';
+      const filename = `screenshot-${scenarioName}-${timestamp}.png`;
+      const filepath = path.join(screenshotsDir, filename);
+      
+      fs.writeFileSync(filepath, Buffer.from(screenShot, 'base64'));
+      console.log(`Screenshot saved to: ${filepath}`);
+  }
+  return Promise.resolve();
+});
