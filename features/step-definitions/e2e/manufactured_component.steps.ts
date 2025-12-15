@@ -1,0 +1,99 @@
+import { Given, When, Then, After } from '@cucumber/cucumber';
+import axios, { AxiosInstance } from 'axios';
+import { expect } from 'chai';
+
+const BASE_URL = process.env.BASE_URL || 'http://localhost:8080';
+let client: AxiosInstance;
+let ctx: any = {};
+
+Given('the API base URL is configured', function () {
+  client = axios.create({
+    baseURL: BASE_URL,
+    timeout: 10000,
+    headers: { 'Content-Type': 'application/json' },
+    validateStatus: () => true
+  });
+});
+
+When('I ensure there is a component list available', async function () {
+  const res = await client.get('/api/component-lists');
+  if (res.status === 200 && Array.isArray(res.data) && res.data.length > 0) {
+    ctx.componentListId = res.data[0].id;
+    return;
+  }
+  const cr = await client.post('/api/component-lists', { name: `e2e-cl-${Date.now()}` });
+  if ([200, 201].includes(cr.status)) {
+    ctx.componentListId = cr.data.id;
+  } else {
+    this.skip();
+  }
+});
+
+When('I create a manufactured component of quantity {int} using the available component list and a new type', async function (quantity: number) {
+  const typeRes = await client.post('/api/manufactured-component-types', { name: `e2e-type-${Date.now()}` });
+  if (![200, 201].includes(typeRes.status)) {
+    this.skip();
+  }
+  ctx.type = typeRes.data;
+
+  const payload = {
+    componentListId: ctx.componentListId,
+    manufacturedComponentTypeId: ctx.type.id,
+    quantity
+  };
+  const res = await client.post('/api/manufactured-components', payload);
+  ctx.createComponentResponse = res;
+  if ([200, 201].includes(res.status)) {
+    ctx.component = res.data;
+  }
+});
+
+Then('the create response should be 200 or 201 and contain an id', function () {
+  expect([200, 201]).to.include(ctx.createComponentResponse.status);
+  expect(ctx.component).to.have.property('id');
+});
+
+When('I get the manufactured component by id', async function () {
+  if (!ctx.component) this.skip();
+  const res = await client.get(`/api/manufactured-components/${ctx.component.id}`);
+  ctx.getComponentResponse = res;
+});
+
+Then('I should receive status 200 and the quantity should be {int}', function (expectedQty: number) {
+  expect(ctx.getComponentResponse.status).to.equal(200);
+  expect(ctx.getComponentResponse.data).to.have.property('quantity', expectedQty);
+});
+
+When('I update the manufactured component quantity to {int}', async function (newQty: number) {
+  if (!ctx.component) this.skip();
+  const res = await client.put(`/api/manufactured-components/${ctx.component.id}`, { quantity: newQty });
+  ctx.updateResponse = res;
+});
+
+Then('the update response should be 200 or 204', function () {
+  expect([200, 204]).to.include(ctx.updateResponse.status);
+});
+
+When('I delete the manufactured component', async function () {
+  if (!ctx.component) this.skip();
+  const res = await client.delete(`/api/manufactured-components/${ctx.component.id}`);
+  ctx.deleteResp = res;
+});
+
+Then('subsequent GET by id should not return 200', async function () {
+  if (!ctx.component) this.skip();
+  const res = await client.get(`/api/manufactured-components/${ctx.component.id}`);
+  expect(res.status).to.not.equal(200);
+});
+
+After(async function () {
+  try {
+    if (ctx.component && ctx.component.id) {
+      await client.delete(`/api/manufactured-components/${ctx.component.id}`);
+    }
+    if (ctx.type && ctx.type.id) {
+      await client.delete(`/api/manufactured-component-types/${ctx.type.id}`);
+    }
+  } catch (e) {}
+  ctx = {};
+});
