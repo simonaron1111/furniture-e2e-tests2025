@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@cucumber/cucumber": "^12.2.0",
+    "@types/chai": "^5.2.3",
     "@types/node": "^12.11.1",
     "@types/selenium-webdriver": "^4.35.4",
     "chai": "^4.5.0",
